@@ -1,5 +1,6 @@
-package Godernet;
+package Tests;
 
+import Godernet.Godernet;
 import Networks.CompleteNetwork;
 import org.junit.Test;
 
