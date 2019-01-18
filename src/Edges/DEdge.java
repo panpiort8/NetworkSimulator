@@ -1,4 +1,4 @@
-package Networks;
+package Edges;
 
 public class DEdge extends Edge{
 

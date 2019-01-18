@@ -1,5 +1,6 @@
 package Networks;
 
+import Edges.UEdge;
 import Routers.Router;
 
 import java.util.*;

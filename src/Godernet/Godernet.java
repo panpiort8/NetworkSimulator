@@ -1,5 +1,7 @@
+package Godernet;
+
 import Networks.Network;
-import Networks.UEdge;
+import Edges.UEdge;
 import Routers.Router;
 
 import java.util.Map;

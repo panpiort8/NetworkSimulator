@@ -1,3 +1,4 @@
+import Godernet.Godernet;
 import Networks.CompleteNetwork;
 
 public class Demo {

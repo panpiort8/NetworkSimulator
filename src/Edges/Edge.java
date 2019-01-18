@@ -1,4 +1,4 @@
-package Networks;
+package Edges;
 
 import java.util.Objects;
 

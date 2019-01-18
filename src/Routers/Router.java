@@ -1,33 +1,15 @@
 package Routers;
 
-import Networks.DEdge;
+import Godernet.GodRequest;
+import Godernet.RequestType;
+import Edges.DEdge;
+import Packets.Packet;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
-
-enum RequestType{
-    DELETE, ADD
-}
-
-class GodRequest{
-    private final RequestType type;
-    private final Router router;
-    GodRequest(RequestType type, Router router){
-        this.type = type;
-        this.router = router;
-    }
-
-    public Router getRouter() {
-        return router;
-    }
-
-    public RequestType getType() {
-        return type;
-    }
-}
 
 public class Router extends Thread{
     private final int rid;

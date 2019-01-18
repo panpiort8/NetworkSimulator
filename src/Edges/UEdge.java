@@ -1,4 +1,4 @@
-package Networks;
+package Edges;
 
 public class UEdge extends Edge{
     public UEdge(Integer r1, Integer r2){

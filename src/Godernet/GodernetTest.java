@@ -1,3 +1,5 @@
+package Godernet;
+
 import Networks.CompleteNetwork;
 import org.junit.Test;
 
