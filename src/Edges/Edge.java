@@ -2,21 +2,21 @@ package Edges;
 
 import java.util.Objects;
 
-public abstract class Edge {
-    protected Integer r1;
-    protected Integer r2;
+public abstract class Edge<T>{
+    protected T r1;
+    protected T r2;
 
-    public Integer getR1() {
+    public T getR1() {
         return r1;
     }
 
-    public Integer getR2() {
+    public T getR2() {
         return r2;
     }
 
     @Override
     public int hashCode() {
-        return r1*20089 + r2;
+        return r1.hashCode()*20089 + r2.hashCode();
     }
 
     @Override

@@ -1,10 +1,12 @@
-package Edges;
+package Routers;
 
-public class DEdge extends Edge{
+import Edges.Edge;
 
-    public DEdge(Integer r1, Integer r2){
-        this.r1 = r1;
-        this.r2 = r2;
+public class DEdge extends Edge<Integer> {
+
+    DEdge(Integer rid1, Integer rid2){
+        r1 = rid1;
+        r2 = rid2;
     }
 
     @Override

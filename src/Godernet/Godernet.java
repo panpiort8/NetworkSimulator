@@ -1,7 +1,6 @@
 package Godernet;
 
 import Networks.Network;
-import Edges.UEdge;
 import Routers.Router;
 
 import java.util.Map;
@@ -16,21 +15,22 @@ public class Godernet {
         this.routers = network.getRouters();
     }
 
-    public Set<UEdge> getEdges(){ return network.getEdges(); }
+    public Set<Link> getEdges(){ return network.getLinks(); }
 
-    public void removeEdge(UEdge edge){
+    public void removeEdge(Routers.DEdge edge){
 
     }
 
     public void start(){
+        for(Link Link : network.getLinks()){
+            Router r1 = Link.getR1();
+            Router r2 = Link.getR2();
+            r1.addLinkRequest(new LinkRequest(Link));
+            r2.addLinkRequest(new LinkRequest(Link));
+        }
+
         for(Router router : routers.values())
             router.start();
-        for(UEdge edge : network.getEdges()){
-            Router r1 = routers.get(edge.getR1());
-            Router r2 = routers.get(edge.getR2());
-            r1.addAddRequest(r2);
-            r2.addAddRequest(r1);
-        }
     }
 
     public void forceStop(){

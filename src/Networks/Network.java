@@ -1,27 +1,27 @@
 package Networks;
 
-import Edges.UEdge;
+import Godernet.Link;
 import Routers.Router;
 
 import java.util.*;
 
 public class Network {
-    protected Map<java.lang.Integer, Router> routers;
-    protected Set<UEdge> edges;
+    protected Map<Integer, Router> routers;
+    protected Set<Link> Links;
 
     protected Network(){}
 
     protected Network(int n){
         routers = new HashMap<>();
-        edges = new HashSet<>();
+        Links = new HashSet<>();
     }
 
     public Map<java.lang.Integer, Router> getRouters() {
         return routers;
     }
 
-    public Set<UEdge> getEdges() {
-        return edges;
+    public Set<Link> getLinks() {
+        return Links;
     }
 }
 
