@@ -1,6 +1,7 @@
 package Godernet;
 
 import Edges.Edge;
+import Packets.Packet;
 import Routers.Router;
 
 import java.util.logging.Logger;

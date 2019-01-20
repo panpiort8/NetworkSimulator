@@ -1,16 +1,11 @@
-package Godernet;
+package Packets;
 
-public class Packet {
+public class DataPacket extends Packet {
     private static int next_id = 1;
     private final Integer id;
     private final Integer destination;
 
-    protected Packet(){
-        id = null;
-        destination = null;
-    }
-
-    Packet(Integer dest){
+    public DataPacket(Integer dest){
         id = next_id;
         next_id++;
         this.destination = dest;

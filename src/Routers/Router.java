@@ -2,12 +2,14 @@ package Routers;
 
 import Godernet.LinkRequest;
 import Godernet.Link;
+import Packets.DataPacket;
 import Packets.MetaPacket;
-import Godernet.Packet;
+import Packets.Packet;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 public class Router extends Thread{
@@ -19,13 +21,13 @@ public class Router extends Thread{
     private Map<Integer, List<Integer>> graph = new HashMap<>();
     private Map<Integer, Integer> pathVector = new HashMap<>();
     private boolean isDistanceVectorActual = true;
-    private AtomicInteger succeedPacketsNo = new AtomicInteger(0);
+    private ConcurrentMap<DataPacket, Long> packetsArrivals = new ConcurrentHashMap<>();
 
     private ConcurrentLinkedQueue<LinkRequest> linksRequests = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Packet> packetsRequests = new ConcurrentLinkedQueue<>();
 
     private Map<UEdge, UEdgeStatus> edgesStatus = new HashMap<>();
-    private List<Packet> stackedPackets = new LinkedList<>();
+    private List<DataPacket> stackedPackets = new LinkedList<>();
     private Set<UEdge> stackedEdgesToForward = new HashSet<>();
 
     /*PUBLIC INTERFACE METHODS*/
@@ -52,9 +54,10 @@ public class Router extends Thread{
         }
     }
 
-    public int getSucceedPacketsNo() {
-        return succeedPacketsNo.get();
+    public ConcurrentMap<DataPacket, Long> getPacketsArrivals() {
+        return packetsArrivals;
     }
+
     /*END OF PUBLIC INTERFACE METHODS*/
 
 
@@ -119,7 +122,7 @@ public class Router extends Thread{
     }
 
     private void forwardNormalPackets(){
-        for(Packet packet : stackedPackets)
+        for(DataPacket packet : stackedPackets)
             forward(packet, pathVector.get(packet.getDestination()));
         stackedPackets.clear();
     }
@@ -165,10 +168,13 @@ public class Router extends Thread{
         Packet packet = packetsRequests.poll();
         if(packet instanceof MetaPacket)
             consumeMetaPacket((MetaPacket) packet);
-        else if (packet.getDestination()  == getRid())
-            succeedPacketsNo.addAndGet(1);
-        else
-            stackedPackets.add(packet);
+        else if (packet instanceof DataPacket){
+            DataPacket dataPacket = (DataPacket) packet;
+            if(dataPacket.getDestination() == getRid())
+                packetsArrivals.put(dataPacket, System.currentTimeMillis());
+            else
+                stackedPackets.add(dataPacket);
+        }
     }
     /*END OF CONSUMING PACKETS METHODS*/
 

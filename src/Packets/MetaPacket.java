@@ -1,6 +1,5 @@
 package Packets;
 
-import Godernet.Packet;
 import Routers.UEdge;
 import Routers.UEdgeStatus;
 

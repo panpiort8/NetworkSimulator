@@ -1,9 +1,9 @@
 package Godernet;
 
 import Networks.Network;
+import Packets.DataPacket;
 import Routers.Router;
 import Routers.UEdge;
-import jdk.nashorn.internal.objects.annotations.Property;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class Godernet {
         totalPacketsNo++;
         Router starter = network.getRandomRouter();
         Router destination = network.getRandomRouter();
-        starter.addPacketRequest(new Packet(destination.getRid()));
+        starter.addPacketRequest(new DataPacket(destination.getRid()));
         LOGGER.fine(String.format("new packet from %s to %s", starter, destination));
     }
 
@@ -76,7 +76,7 @@ public class Godernet {
         }
         forceStop();
         for (Router router : routers.values())
-            succeedPacketsNo += router.getSucceedPacketsNo();
+            succeedPacketsNo += router.getPacketsArrivals().size();
     }
 
     public void forceStop(){
