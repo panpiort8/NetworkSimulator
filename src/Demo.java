@@ -23,9 +23,9 @@ public class Demo {
 
     public static void main(String[]args) throws InterruptedException {
         setLevel(Level.INFO);
-        Godernet godernet = new Godernet(new CycleNetwork(20));
+        Godernet godernet = new Godernet(new CycleNetwork(100));
         godernet.prepare();
-        Thread.sleep(1000);
+//        Thread.sleep(1000);
         godernet.simulate(2000L);
         godernet.waitForRouters();
         System.out.println(godernet.getStatistics());

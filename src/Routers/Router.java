@@ -7,17 +7,19 @@ import Godernet.Packet;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Logger;
 
 public class Router extends Thread{
     private final Logger LOGGER = Logger.getLogger(getClass().getName());
+    private final Object locker = new Object();
 
     private final int rid;
     private Map<Integer, Link> neighsLinks = new HashMap<>();
     private Map<Integer, List<Integer>> graph = new HashMap<>();
     private Map<Integer, Integer> pathVector = new HashMap<>();
     private boolean isDistanceVectorActual = true;
-    private volatile int succeedPacketsNo = 0;
+    private AtomicInteger succeedPacketsNo = new AtomicInteger(0);
 
     private ConcurrentLinkedQueue<LinkRequest> linksRequests = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Packet> packetsRequests = new ConcurrentLinkedQueue<>();
@@ -26,11 +28,37 @@ public class Router extends Thread{
     private List<Packet> stackedPackets = new LinkedList<>();
     private Set<UEdge> stackedEdgesToForward = new HashSet<>();
 
+    /*PUBLIC INTERFACE METHODS*/
     public Router(int rid){
         this.rid = rid;
         graph.put(rid, new LinkedList<>());
     }
 
+    public int getRid() {
+        return rid;
+    }
+
+    public void addLinkRequest(LinkRequest linkRequest){
+        synchronized (locker){
+            linksRequests.add(linkRequest);
+            locker.notifyAll();
+        }
+    }
+
+    public void addPacketRequest(Packet packet){
+        synchronized (locker) {
+            packetsRequests.add(packet);
+            locker.notifyAll();
+        }
+    }
+
+    public int getSucceedPacketsNo() {
+        return succeedPacketsNo.get();
+    }
+    /*END OF PUBLIC INTERFACE METHODS*/
+
+
+    /*MANIPULATING GRAPH METHODS*/
     private void updatePathVector(){
         // first: rid; second: bestNeighRid
         Queue<Integer> queue = new LinkedList<>();
@@ -55,22 +83,12 @@ public class Router extends Thread{
         isDistanceVectorActual = true;
     }
 
-    public void addLinkRequest(LinkRequest linkRequest){
-        linksRequests.add(linkRequest);
-    }
-
-    public void addPacketRequest(Packet packet){
-        packetsRequests.add(packet);
-    }
-
-    public int getRid() {
-        return rid;
-    }
-
     private void addUEdge(UEdge edge){
 //        System.out.println(String.format("%s adding %s", this, edge));
         addDEdge(edge.getR1(), edge.getR2());
         addDEdge(edge.getR2(), edge.getR1());
+
+
     };
 
     private void addDEdge(Integer r1, Integer r2){
@@ -82,7 +100,10 @@ public class Router extends Thread{
     private void removeEdge(UEdge edge){
         throw new RuntimeException("Not yet!");
     }
+    /*END OF MANIPULATING GRAPH METHODS*/
 
+
+    /*FORWARDING PACKETS METHODS*/
     private void forward(Packet packet, Integer neighRid){
         if (!neighsLinks.containsKey(neighRid) || !neighsLinks.get(neighRid).forward(packet, neighRid))
             addPacketRequest(packet);
@@ -97,6 +118,15 @@ public class Router extends Thread{
         stackedEdgesToForward.clear();
     }
 
+    private void forwardNormalPackets(){
+        for(Packet packet : stackedPackets)
+            forward(packet, pathVector.get(packet.getDestination()));
+        stackedPackets.clear();
+    }
+    /*END OF FORWARDING PACKETS METHODS*/
+
+
+    /*CONSUMING PACKETS METHODS*/
     private void consumeMetaPacket(MetaPacket packet){
         UEdge edge = packet.getEdge();
         LOGGER.finest(String.format("%s consuming metapacket %s", this, packet));
@@ -136,31 +166,48 @@ public class Router extends Thread{
         if(packet instanceof MetaPacket)
             consumeMetaPacket((MetaPacket) packet);
         else if (packet.getDestination()  == getRid())
-            succeedPacketsNo += 1;
+            succeedPacketsNo.addAndGet(1);
         else
             stackedPackets.add(packet);
     }
+    /*END OF CONSUMING PACKETS METHODS*/
 
-    private void forwardNormalPackets(){
-        for(Packet packet : stackedPackets)
-            forward(packet, pathVector.get(packet.getDestination()));
-        stackedPackets.clear();
+    private void goForBreak(){
+        //  It's made only for performance reasons.
+        //  We don't need to care about satisfying any condition (no while loop).
+        try {
+            locker.wait();
+        } catch (InterruptedException e) {
+            interrupt();
+        }
     }
-
     @Override
     public void run() {
+        int linkRequestsLimit = 10;
+        int packetRequestsLimit = 20;
         while (!Thread.interrupted()){
-            while (!linksRequests.isEmpty())
+            int linkRequested = 0;
+            int packetRequested = 0;
+            while (linkRequested < linkRequestsLimit && !linksRequests.isEmpty()){
                 consumeNextLinkRequest();
+                linkRequested++;
+            }
 
-            while(!packetsRequests.isEmpty())
+            while(packetRequested < packetRequestsLimit && !packetsRequests.isEmpty()) {
                 consumeNextPacketRequest();
+                packetRequested++;
+            }
 
             if(!isDistanceVectorActual)
                 updatePathVector();
 
             forwardMetaPackets();
             forwardNormalPackets();
+
+            synchronized (locker){
+                if(linksRequests.isEmpty() && packetsRequests.isEmpty())
+                    goForBreak();
+            }
         }
         LOGGER.info(String.format("%s: %s", this, graph));
     }
@@ -173,9 +220,5 @@ public class Router extends Thread{
     @Override
     public int hashCode() {
         return rid;
-    }
-
-    public int getSucceedPacketsNo() {
-        return succeedPacketsNo;
     }
 }
