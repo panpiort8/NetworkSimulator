@@ -1,19 +1,19 @@
 package Routers;
 
-public class DEdgeStatus {
+public class UEdgeStatus {
     private final long time;
     private final boolean enabled;
 
-    public DEdgeStatus(boolean b, long time) {
+    public UEdgeStatus(boolean b, long time) {
         enabled = b;
         this.time = time;
     }
 
-    static DEdgeStatus getNewer(DEdgeStatus es1, DEdgeStatus es2){
+    static UEdgeStatus getNewer(UEdgeStatus es1, UEdgeStatus es2){
         return es1.time > es2.time ? es1 : es2;
     }
 
-    public boolean newerThan(DEdgeStatus other){
+    public boolean newerThan(UEdgeStatus other){
         return time > other.time;
     }
 

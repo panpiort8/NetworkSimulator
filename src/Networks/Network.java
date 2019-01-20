@@ -7,13 +7,19 @@ import java.util.*;
 
 public class Network {
     protected Map<Integer, Router> routers;
-    protected Set<Link> Links;
+    protected Set<Link> links;
+    private Random random;
+    private int n;
 
     protected Network(){}
 
     protected Network(int n){
+        this.n = n;
         routers = new HashMap<>();
-        Links = new HashSet<>();
+        links = new HashSet<>();
+        random = new Random();
+        for (int i = 0; i < n; i++)
+            routers.put(i, new Router(i));
     }
 
     public Map<java.lang.Integer, Router> getRouters() {
@@ -21,7 +27,11 @@ public class Network {
     }
 
     public Set<Link> getLinks() {
-        return Links;
+        return links;
+    }
+
+    public Router getRandomRouter(){
+        return routers.get(random.nextInt(n));
     }
 }
 

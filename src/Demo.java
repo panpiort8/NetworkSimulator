@@ -1,11 +1,33 @@
 import Godernet.Godernet;
-import Networks.CompleteNetwork;
+import Networks.CycleNetwork;
+import Networks.PathNetwork;
+
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Demo {
+
+    static {
+        System.setProperty("java.util.logging.SimpleFormatter.format", "%4$s %5$s%6$s%n");
+    }
+
+    private static void setLevel(Level targetLevel) {
+        Logger root = Logger.getLogger("");
+        root.setLevel(targetLevel);
+        for (Handler handler : root.getHandlers()) {
+            handler.setLevel(targetLevel);
+        }
+        System.out.println("level set: " + targetLevel.getName());
+    }
+
     public static void main(String[]args) throws InterruptedException {
-        Godernet godernet = new Godernet(new CompleteNetwork(10));
-        godernet.start();
+        setLevel(Level.INFO);
+        Godernet godernet = new Godernet(new CycleNetwork(20));
+        godernet.prepare();
         Thread.sleep(1000);
-        godernet.forceStop();
+        godernet.simulate(2000L);
+        godernet.waitForRouters();
+        System.out.println(godernet.getStatistics());
     }
 }

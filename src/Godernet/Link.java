@@ -1,11 +1,13 @@
 package Godernet;
 
 import Edges.Edge;
-import Packets.Packet;
 import Routers.Router;
+
+import java.util.logging.Logger;
 
 public class Link extends Edge<Router>{
     private boolean enabled;
+    private final Logger LOGGER = Logger.getLogger(getClass().getName());
 
     public Link(Router router1, Router router2){
         if(router1.getRid() < router2.getRid()){
@@ -29,7 +31,7 @@ public class Link extends Edge<Router>{
         Router neigh = getRouterWithRid(neighRid);
         if(!enabled || neigh == null) return false;
         neigh.addPacketRequest(packet);
-        System.out.println(String.format("%s from %s to %s", packet, getMyNeighRid(neigh), neighRid));
+        LOGGER.fine(String.format("%s from %s to %s", packet, getMyNeighRid(neigh), neighRid));
         return true;
     }
 
@@ -49,16 +51,6 @@ public class Link extends Edge<Router>{
 
     public boolean isEnabled() {
         return enabled;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof Link && super.equals(o);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("{%s, %s}", r1, r2);
     }
 
 }

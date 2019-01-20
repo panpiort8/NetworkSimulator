@@ -26,4 +26,9 @@ public abstract class Edge<T>{
         Edge e = (Edge) o;
         return Objects.equals(r1, e.r1) && Objects.equals(r2, e.r2);
     }
+
+    @Override
+    public String toString() {
+        return String.format("{%s, %s}", r1, r2);
+    }
 }

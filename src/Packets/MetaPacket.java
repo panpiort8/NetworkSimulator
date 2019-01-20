@@ -1,33 +1,37 @@
 package Packets;
 
-import Routers.DEdge;
-import Routers.DEdgeStatus;
+import Godernet.Packet;
+import Routers.UEdge;
+import Routers.UEdgeStatus;
 
-public class MetaPacket extends Packet{
-    private final DEdgeStatus status;
-    private final DEdge edge;
+import java.util.concurrent.atomic.AtomicInteger;
 
-    public MetaPacket(DEdge edge, boolean enabled){
-        super();
-        this.edge = edge;
-        this.status = new DEdgeStatus(enabled, System.currentTimeMillis());
+public class MetaPacket extends Packet {
+    private final UEdgeStatus status;
+    private final UEdge edge;
+    private static AtomicInteger next_mid = new AtomicInteger(1);
+    private final Integer mid;
+
+    public MetaPacket(UEdge edge, boolean enabled){
+        this(edge, new UEdgeStatus(enabled, System.currentTimeMillis()));
     }
 
-    public MetaPacket(DEdge edge, DEdgeStatus status){
+    public MetaPacket(UEdge edge, UEdgeStatus status){
+        this.mid = next_mid.getAndAdd(1);
         this.edge = edge;
         this.status = status;
     }
 
-    public DEdge getEdge() {
+    public UEdge getEdge() {
         return edge;
     }
 
-    public DEdgeStatus getStatus() {
+    public UEdgeStatus getStatus() {
         return status;
     }
 
     @Override
     public String toString() {
-        return String.format("mp_%d(%s)", getId(), edge);
+        return String.format("mp_%d(%s)", mid, edge);
     }
 }
