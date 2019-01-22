@@ -1,5 +1,6 @@
 package Godernet;
 
+import Edges.Link;
 import Networks.DynamicNetwork;
 import Networks.Network;
 import Packets.DataPacket;
@@ -63,8 +64,10 @@ public class Godernet {
         stats.add(new Pair<>("avg_time", avgTime));
         stats.add(new Pair<>("max_time", maxTime));
         stats.add(new Pair<>("avg_deg", 2D*network.getLinks().size()/routers.size()));
-        stats.add(new Pair<>("deleted_links", deletedLinksNo));
-        stats.add(new Pair<>("added_links", addedLinksNo));
+        if(network instanceof DynamicNetwork){
+            stats.add(new Pair<>("deleted_links", deletedLinksNo));
+            stats.add(new Pair<>("added_links", addedLinksNo));
+        }
         return stats;
     }
 
@@ -93,7 +96,7 @@ public class Godernet {
 
     public void simulate(Long time) throws InterruptedException {
         SimpleTimer simulatorTimer = new SimpleTimer(time);
-        SimpleTimer topologyTimer = new SimpleTimer(100);
+        SimpleTimer topologyTimer = new SimpleTimer(1000);
         Long delay = 10L;
         while (!simulatorTimer.isOver()){
             Thread.sleep(delay);

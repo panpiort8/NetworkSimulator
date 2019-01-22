@@ -1,9 +1,7 @@
-package Godernet;
+package Edges;
 
-import Edges.Edge;
 import Packets.Packet;
 import Routers.Router;
-import Routers.UEdge;
 
 import java.util.logging.Logger;
 
@@ -20,7 +18,7 @@ public class Link extends Edge<Router>{
             this.r1 = router2;
             this.r2 = router1;
         }
-        enable();
+        enabled = true;
     }
 
     public Integer getMyNeighRid(Router me){
@@ -43,11 +41,7 @@ public class Link extends Edge<Router>{
         return rid == r1.getRid() ? r1 : r2;
     }
 
-    void enable(){
-        enabled = true;
-    }
-
-    void disable(){
+    public void disable(){
         enabled = false;
     }
 

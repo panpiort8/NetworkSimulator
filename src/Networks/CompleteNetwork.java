@@ -1,6 +1,6 @@
 package Networks;
 
-import Godernet.Link;
+import Edges.Link;
 import Routers.Router;
 
 import java.util.Objects;

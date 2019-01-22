@@ -1,7 +1,8 @@
 package Routers;
 
+import Edges.UEdge;
 import Godernet.LinkRequest;
-import Godernet.Link;
+import Edges.Link;
 import Godernet.SimpleTimer;
 import Packets.DataPacket;
 import Packets.MetaPacket;

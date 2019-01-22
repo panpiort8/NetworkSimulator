@@ -1,6 +1,6 @@
 package Packets;
 
-import Routers.UEdge;
+import Edges.UEdge;
 import Routers.UEdgeStatus;
 
 import java.util.concurrent.atomic.AtomicInteger;

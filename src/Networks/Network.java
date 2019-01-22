@@ -1,11 +1,11 @@
 package Networks;
 
-import Godernet.Link;
+import Edges.Link;
 import Routers.Router;
 
 import java.util.*;
 
-public class Network {
+public abstract class Network {
     protected Map<Integer, Router> routers;
     protected Set<Link> links;
     private Random random;

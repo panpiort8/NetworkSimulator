@@ -1,7 +1,6 @@
 package Networks;
 
-import Godernet.Link;
-import Routers.Router;
+import Edges.Link;
 
 public class CycleNetwork extends PathNetwork{
     public CycleNetwork(int n){

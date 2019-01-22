@@ -1,10 +1,8 @@
 package Networks;
 
-import Godernet.Link;
-import Routers.Router;
+import Edges.Link;
 
 import java.awt.*;
-import java.awt.geom.Point2D;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;

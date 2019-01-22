@@ -1,6 +1,6 @@
 package Networks;
 
-import Godernet.Link;
+import Edges.Link;
 
 public class PathNetwork extends Network{
     public PathNetwork(int n){
