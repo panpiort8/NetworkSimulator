@@ -135,6 +135,12 @@ public class Router extends Thread{
             forward(packet, pathVector.get(packet.getDestination()));
         stackedPackets.clear();
     }
+
+    private void prepareRebroadcast(){
+        for(Link link : neighsLinks.values())
+            if(link.getOwnerRid() == getRid())
+                stackedEdgesToForward.add(link.getUEdge());
+    }
     /*END OF FORWARDING PACKETS METHODS*/
 
 
@@ -187,11 +193,6 @@ public class Router extends Thread{
     }
     /*END OF CONSUMING PACKETS METHODS*/
 
-    private void prepareRebroadcast(){
-       for(Link link : neighsLinks.values())
-           if(link.getOwnerRid() == getRid())
-               stackedEdgesToForward.add(link.getUEdge());
-    }
 
     private void goForBreak(){
         //  It's made only for performance reasons.

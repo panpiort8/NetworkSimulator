@@ -10,6 +10,7 @@ import javafx.util.Pair;
 import java.util.*;
 import java.util.logging.Logger;
 
+/*Main class that is superior of network transfers*/
 public class Godernet {
 
     private final Logger LOGGER = Logger.getLogger(getClass().getName());
@@ -20,21 +21,10 @@ public class Godernet {
     private int addedLinksNo = 0;
     private int deletedLinksNo = 0;
 
+
     public Godernet(Network network){
         this.network = network;
         this.routers = network.getRouters();
-    }
-
-    private void addLink(Link link){
-        link.getR1().addLinkRequest(new LinkRequest(link));
-        link.getR2().addLinkRequest(new LinkRequest(link));
-    }
-
-    private void deleteLink(Link link){
-        Link oldLink = link.getR1().getNeighsLinks().get(link.getR2().getRid());
-        oldLink.disable();
-        link.getR1().addLinkRequest(new LinkRequest(oldLink));
-        link.getR2().addLinkRequest(new LinkRequest(oldLink));
     }
 
     public void prepare(){
@@ -43,6 +33,32 @@ public class Godernet {
 
         for(Router router : routers.values())
             router.start();
+    }
+
+    public void simulate(Long time) throws InterruptedException {
+        SimpleTimer simulatorTimer = new SimpleTimer(time);
+        SimpleTimer topologyTimer = new SimpleTimer(1000);
+        Long delay = 10L;
+        while (!simulatorTimer.isOver()){
+            Thread.sleep(delay);
+            produceNewPacket();
+            if(network instanceof DynamicNetwork && topologyTimer.isOver()){
+                changeTopology();
+                topologyTimer.restart();
+            }
+        }
+        forceStop();
+        waitForRouters();
+    }
+
+    public void forceStop(){
+        for (Router router : routers.values())
+            router.interrupt();
+    }
+
+    public void waitForRouters() throws InterruptedException {
+        for (Router router : routers.values())
+            router.join();
     }
 
     public List<Pair<String, Object>> getStatistics(){
@@ -71,6 +87,7 @@ public class Godernet {
         return stats;
     }
 
+
     private void produceNewPacket(){
         totalPacketsNo++;
         Router starter = network.getRandomRouter();
@@ -94,30 +111,16 @@ public class Godernet {
             deleteLink(link);
     }
 
-    public void simulate(Long time) throws InterruptedException {
-        SimpleTimer simulatorTimer = new SimpleTimer(time);
-        SimpleTimer topologyTimer = new SimpleTimer(1000);
-        Long delay = 10L;
-        while (!simulatorTimer.isOver()){
-            Thread.sleep(delay);
-            produceNewPacket();
-            if(network instanceof DynamicNetwork && topologyTimer.isOver()){
-                changeTopology();
-                topologyTimer.restart();
-            }
-        }
-        forceStop();
-        waitForRouters();
+    private void addLink(Link link){
+        link.getR1().addLinkRequest(new LinkRequest(link));
+        link.getR2().addLinkRequest(new LinkRequest(link));
     }
 
-    public void forceStop(){
-        for (Router router : routers.values())
-            router.interrupt();
-    }
-
-    public void waitForRouters() throws InterruptedException {
-        for (Router router : routers.values())
-            router.join();
+    private void deleteLink(Link link){
+        Link oldLink = link.getR1().getNeighsLinks().get(link.getR2().getRid());
+        oldLink.disable();
+        link.getR1().addLinkRequest(new LinkRequest(oldLink));
+        link.getR2().addLinkRequest(new LinkRequest(oldLink));
     }
 
 }
