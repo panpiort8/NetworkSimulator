@@ -2,14 +2,14 @@ package Routers;
 
 import Godernet.LinkRequest;
 import Godernet.Link;
+import Godernet.SimpleTimer;
 import Packets.DataPacket;
 import Packets.MetaPacket;
 import Packets.Packet;
+import javafx.util.Pair;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
 public class Router extends Thread{
@@ -21,7 +21,7 @@ public class Router extends Thread{
     private Map<Integer, List<Integer>> graph = new HashMap<>();
     private Map<Integer, Integer> pathVector = new HashMap<>();
     private boolean isDistanceVectorActual = true;
-    private ConcurrentMap<DataPacket, Long> packetsArrivals = new ConcurrentHashMap<>();
+    private ConcurrentLinkedQueue<Pair<DataPacket, Long>> packetsArrivals = new ConcurrentLinkedQueue<Pair<DataPacket, Long>>();
 
     private ConcurrentLinkedQueue<LinkRequest> linksRequests = new ConcurrentLinkedQueue<>();
     private ConcurrentLinkedQueue<Packet> packetsRequests = new ConcurrentLinkedQueue<>();
@@ -29,6 +29,7 @@ public class Router extends Thread{
     private Map<UEdge, UEdgeStatus> edgesStatus = new HashMap<>();
     private List<DataPacket> stackedPackets = new LinkedList<>();
     private Set<UEdge> stackedEdgesToForward = new HashSet<>();
+
 
     /*PUBLIC INTERFACE METHODS*/
     public Router(int rid){
@@ -54,10 +55,13 @@ public class Router extends Thread{
         }
     }
 
-    public ConcurrentMap<DataPacket, Long> getPacketsArrivals() {
+    public ConcurrentLinkedQueue<Pair<DataPacket, Long>> getPacketsArrivals() {
         return packetsArrivals;
     }
 
+    public Map<Integer, Link> getNeighsLinks() {
+        return neighsLinks;
+    }
     /*END OF PUBLIC INTERFACE METHODS*/
 
 
@@ -90,8 +94,6 @@ public class Router extends Thread{
 //        System.out.println(String.format("%s adding %s", this, edge));
         addDEdge(edge.getR1(), edge.getR2());
         addDEdge(edge.getR2(), edge.getR1());
-
-
     };
 
     private void addDEdge(Integer r1, Integer r2){
@@ -100,8 +102,14 @@ public class Router extends Thread{
         graph.get(r1).add(r2);
     }
 
-    private void removeEdge(UEdge edge){
-        throw new RuntimeException("Not yet!");
+    private void removeUEdge(UEdge edge){
+        removeDEdge(edge.getR1(), edge.getR2());
+        removeDEdge(edge.getR2(), edge.getR1());
+    }
+
+    private void removeDEdge(Integer r1, Integer r2){
+        if (graph.containsKey(r1))
+            graph.get(r1).remove(r2);
     }
     /*END OF MANIPULATING GRAPH METHODS*/
 
@@ -148,7 +156,7 @@ public class Router extends Thread{
         if(packetStat.isEnabled())
             addUEdge(edge);
         else
-            removeEdge(edge);
+            removeUEdge(edge);
         isDistanceVectorActual = false;
         stackedEdgesToForward.add(edge);
     }
@@ -171,12 +179,18 @@ public class Router extends Thread{
         else if (packet instanceof DataPacket){
             DataPacket dataPacket = (DataPacket) packet;
             if(dataPacket.getDestination() == getRid())
-                packetsArrivals.put(dataPacket, System.currentTimeMillis());
+                packetsArrivals.add(new Pair<>(dataPacket, System.currentTimeMillis()));
             else
                 stackedPackets.add(dataPacket);
         }
     }
     /*END OF CONSUMING PACKETS METHODS*/
+
+    private void prepareRebroadcast(){
+       for(Link link : neighsLinks.values())
+           if(link.getOwnerRid() == getRid())
+               stackedEdgesToForward.add(link.getUEdge());
+    }
 
     private void goForBreak(){
         //  It's made only for performance reasons.
@@ -187,10 +201,12 @@ public class Router extends Thread{
             interrupt();
         }
     }
+
     @Override
     public void run() {
         int linkRequestsLimit = 10;
         int packetRequestsLimit = 20;
+        SimpleTimer rebroadcastTimer = new SimpleTimer(1000);
         while (!Thread.interrupted()){
             int linkRequested = 0;
             int packetRequested = 0;
@@ -206,6 +222,11 @@ public class Router extends Thread{
 
             if(!isDistanceVectorActual)
                 updatePathVector();
+
+            if(rebroadcastTimer.isOver()){
+                prepareRebroadcast();
+                rebroadcastTimer.restart();
+            }
 
             forwardMetaPackets();
             forwardNormalPackets();

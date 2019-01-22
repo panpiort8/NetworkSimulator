@@ -1,7 +1,11 @@
 import Godernet.Godernet;
 import Networks.CycleNetwork;
+import Networks.DynamicGeoNetwork;
+import Networks.GeoNetwork;
 import Networks.PathNetwork;
+import javafx.util.Pair;
 
+import java.util.Map;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,16 +22,19 @@ public class Demo {
         for (Handler handler : root.getHandlers()) {
             handler.setLevel(targetLevel);
         }
-        System.out.println("level set: " + targetLevel.getName());
+        System.out.println("LOGGER LEVEL: " + targetLevel.getName());
+    }
+
+    private static void printStats(Godernet godernet){
+        for(Pair<String, Object> stat : godernet.getStatistics())
+            System.out.println(String.format("%s: %s", stat.getKey(), stat.getValue()));
     }
 
     public static void main(String[]args) throws InterruptedException {
         setLevel(Level.INFO);
-        Godernet godernet = new Godernet(new CycleNetwork(100));
+        Godernet godernet = new Godernet(new DynamicGeoNetwork(10, (n)->5D));
         godernet.prepare();
-//        Thread.sleep(1000);
         godernet.simulate(2000L);
-        godernet.waitForRouters();
-        System.out.println(godernet.getStatistics());
+        printStats(godernet);
     }
 }

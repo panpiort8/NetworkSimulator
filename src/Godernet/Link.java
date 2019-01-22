@@ -3,6 +3,7 @@ package Godernet;
 import Edges.Edge;
 import Packets.Packet;
 import Routers.Router;
+import Routers.UEdge;
 
 import java.util.logging.Logger;
 
@@ -54,4 +55,11 @@ public class Link extends Edge<Router>{
         return enabled;
     }
 
+    public Integer getOwnerRid(){
+        return getR1().getRid();
+    }
+
+    public UEdge getUEdge(){
+        return new UEdge(r1.getRid(), r2.getRid());
+    }
 }
